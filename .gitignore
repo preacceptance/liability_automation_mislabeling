@@ -1,0 +1,6 @@
+/lit/
+/notes/
+*.Rhistory
+*.RData
+/E0_Prestudy/data/
+/archive/
