@@ -4,3 +4,4 @@
 *.RData
 /E0_Prestudy/data/
 /archive/
+.DS_Store
