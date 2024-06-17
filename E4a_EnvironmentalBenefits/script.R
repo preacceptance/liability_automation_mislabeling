@@ -1,3 +1,4 @@
+
 ## clear workspace
 rm(list = ls()) 
 
@@ -28,12 +29,14 @@ pacman::p_load('tidyverse',       # most stuff
                "sjstats"
 )
 
+# PROCESS Analysis (Set TRUE if you wish to run PROCESS code)
 mediation <- FALSE
-if(mediation) source('../process.r')
+
+if(mediation) source('../process.R')
 
 
 ## ================================================================================================================
-##                                Exclusions and Pre-processing              
+##                                    Exclusions            
 ## ================================================================================================================
 
 # Read full dataset
@@ -46,12 +49,13 @@ df |>
   mutate_if(all.is.numeric, as.numeric) -> df
 
 # ATTENTION CHECKS
+n_initial <- nrow(df)
 df |>
   filter(att_1 == 2, att_2 == 2) -> df
 
 n_attention <- nrow(df); n_attention
 
-# COMPREHENSION CHECKS 1 and 2
+# COMPREHENSION CHECKS
 df |>
   filter(comp_1 == 2 & comp_2 == 4) -> df
 
@@ -78,6 +82,7 @@ co$benefits <- ifelse(is.na(co$comp_4), "Absent", "Present")
 d <- rbind(auto,co)
 d <- d[!is.na(d$capability),]
 
+
 # COMPREHENSION CHECKS 3 & 4
 d |>
   filter((comp_3 == 2 & label == "auto") | (comp_3 == 1 & label == "co")) -> d
@@ -92,31 +97,26 @@ d_process <- d
 d_process$label <- as.numeric(as.factor(d_process$label))
 d_process$benefits <- as.numeric(as.factor(d_process$benefits))
 
-## Number of Final Participants
+## Number of final participants
 n_comprehension <- nrow(d); n_comprehension
 
 ## Number excluded
 n_attention - n_comprehension
-
 ## ================================================================================================================
 ##                                Participant Characteristics              
 ## ================================================================================================================
-
 # AGE
-mean(as.numeric(d$age), na.rm = T) 
+mean(d$age) 
 
 # GENDER
 prop_male <- prop.table(table(d$gender))[[1]]; prop_male
 
 ## ================================================================================================================
-##                               Analysis              
+##                                      ANALYSIS              
 ## ================================================================================================================
 
 cronbach.alpha(d[,c("r_soft", "l_firm")])
 cronbach.alpha(d[,c("r_human", "l_human")])
-
-d$firm <- rowMeans(d[,c("r_soft", "l_firm")])
-d$human <- rowMeans(d[,c("r_human", "l_human")])
 
 # FIRM
 a <- aov(firm ~ as.factor(label) * as.factor(benefits), data = d)
@@ -124,7 +124,6 @@ summary(a)
 anova_stats(a); anova_stats(a)$partial.etasq
 
 ## t-tests
-
 ### Absent Condition
 t1 <- t.test(d[d$benefits == 'Absent' & d$label == 'auto',]$firm,
              d[d$benefits == 'Absent' & d$label == 'co',]$firm, paired = FALSE)
@@ -138,25 +137,14 @@ cohen.d(d[d$benefits == 'Absent' & d$label == 'auto',]$firm,
 
 ### Present Condition
 t2 <- t.test(d[d$benefits == 'Present' & d$label == 'auto',]$firm,
-             d[d$benefits == 'Present' & d$label == 'co',]$firm, paired = FALSE)
+              d[d$benefits == 'Present' & d$label == 'co',]$firm, paired = FALSE)
 t2
 
 sd(d[d$benefits == 'Present' & d$label == 'auto',]$firm)
 sd(d[d$benefits == 'Present' & d$label == 'co',]$firm)
 
 cohen.d(d[d$benefits == 'Present' & d$label == 'auto',]$firm,
-        d[d$benefits == 'Present' & d$label == 'co',]$firm)
-
-## Direct effect of advertisement
-t3 <- t.test(d[d$benefits == 'Present',]$firm,
-             d[d$benefits == 'Absent',]$firm, paired = FALSE)
-t3
-
-sd(d[d$benefits == 'Present',]$firm)
-sd(d[d$benefits == 'Absent',]$firm)
-
-cohen.d(d[d$benefits == 'Present',]$firm,
-        d[d$benefits == 'Absent',]$firm)
+       d[d$benefits == 'Present' & d$label == 'co',]$firm)
 
 ## Simple Mediation
 if(mediation) process(data = d_process, y = "firm", x = "label", 
@@ -189,18 +177,7 @@ sd(d[d$benefits == 'Present' & d$label == 'auto',]$human)
 sd(d[d$benefits == 'Present' & d$label == 'co',]$human)
 
 cohen.d(d[d$benefits == 'Present' & d$label == 'auto',]$human,
-        d[d$benefits == 'Present' & d$label == 'co',]$human)
-
-## Direct Effects
-t2 <- t.test(d[d$benefits == 'Present',]$human,
-             d[d$benefits == 'Absent',]$human, paired = FALSE)
-t2
-
-sd(d[d$benefits == 'Present',]$human)
-sd(d[d$benefits == 'Absent',]$human)
-
-cohen.d(d[d$benefits == 'Present',]$human,
-        d[d$benefits == 'Absent',]$human)
+       d[d$benefits == 'Present' & d$label == 'co',]$human)
 
 ## Simple Mediation
 if(mediation) process(data = d_process, y = "human", x = "label", 
@@ -208,7 +185,7 @@ if(mediation) process(data = d_process, y = "human", x = "label",
         contrast =1, boot = 10000 , modelbt = 1, seed = 654321)
 
 ## ================================================================================================================
-##                                VISUALIZATION               
+##                                VISUALIZATION              
 ## ================================================================================================================
 
 std.error <- function(x) sd(x)/sqrt(length(x))
@@ -244,7 +221,7 @@ plot_did <- function(df=d_plot, dv, signif=c("*","*","*"), yaxis=TRUE, ypos=c(10
     geom_point(aes(y=mean),position=position_dodge(width = .9), size=.5, color="black") +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"),
-          plot.title = element_text(hjust = 0.5, face = "bold", size=10)
+          plot.title = element_text(hjust = 0.5, face = "bold",size=10)
     ) +
     geom_signif(
       y_position = ypos, xmin = c(0.8, 1.8, 1.0), xmax = c(1.2, 2.2, 2.0),
@@ -266,14 +243,15 @@ plot_did <- function(df=d_plot, dv, signif=c("*","*","*"), yaxis=TRUE, ypos=c(10
   
   return(p)
 }
-
-plot_did(dv = "Human Liability", signif = c("**", "**", "ns"), yaxis=F) -> p1
-plot_did(dv = "Firm Liability", signif = c("***", "**", "ns"), yaxis=T)  -> p2
+plot_did(dv = "Human Liability", signif = c("***", "***", "ns"), yaxis=F) -> p1
+plot_did(dv = "Firm Liability", signif = c("***", "***", "ns"))  -> p2
 
 ggarrange(p2 + rremove("ylab") + rremove("xlab"),
           p1 + rremove("ylab") + rremove("xlab"),
           ncol = 2, common.legend = TRUE) |>
   annotate_figure( left = textGrob("Mean Ratings", rot = 90, vjust = 1, gp = gpar(cex = .8, fontface = "bold")),
-                   bottom = textGrob("AV Safety Benefits Condition", gp = gpar(cex = .8, fontface = "bold")))
+                   bottom = textGrob("Environmental Benefits Condition", gp = gpar(cex = .8, fontface = "bold"))) -> p
 
-ggsave("av_safety_benefits.jpg", device = "jpg",width = 5.3, height = 3.7, units = "in")
+p
+
+ggsave("env_benefits.jpg", device = "jpg",width = 5.3, height = 3.7, units = "in")
