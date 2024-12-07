@@ -1,4 +1,4 @@
-# Autonomous Vehicle Mislabeling Liability
+# Liability From Automation Mislabeling
 
 ## Software Version and Requirements
 
