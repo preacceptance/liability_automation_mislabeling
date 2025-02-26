@@ -193,6 +193,47 @@ ks.test(d[d$label == "auto",]$time_control, d[d$label == "co",]$time_control)
 ## ================================================================================================================
 ##                                VISUALIZATION               
 ## ================================================================================================================
+d |>
+  mutate(
+    Label = ifelse( label == "co", "Copilot", "Autopilot"),
+    `Time to Take Control (s)` = time_control
+  ) -> d_plot
+
+ggplot(d_plot, aes(x = Label, y = `Time to Take Control (s)`)) +
+  stat_summary(fun = mean, geom = "bar",, alpha = 0.5) +  # Bar plot
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar", width = 0.5) +   # Error bars
+  geom_jitter(width = 0.2, alpha = 0.15, size = .1, color = "#00003B") +  # Individual data points
+  scale_fill_grey() +
+  scale_color_grey() +
+  theme_classic() + 
+  geom_signif(comparisons = list(c("Copilot", "Autopilot")), map_signif_level = TRUE, , test = "t.test") +
+  theme(text = element_text(face = "bold"))-> p1
+
+p1
+
+ggplot(data = d_plot, aes(color =`Label`, x=time_control )) +
+  stat_density(geom="line", position="identity", alpha=.75) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        plot.title = element_text(hjust = 0.5, face = "bold", size=10), legend.position = 'top' ) + 
+  scale_color_grey() +
+  ylab("Density") +
+  xlab("Time to Take Control (s)") + 
+  ggplot2::annotate("rect", xmin = 5, xmax = 10, ymin = 0, ymax = .2,alpha = .1) +
+  ggplot2::annotate("text", x = 7.5, y = .08, label = "Vehicle approaches intersection", size = 2) +
+  ggplot2::annotate("rect", xmin = 15, xmax = 20, ymin = 0, ymax = .2,alpha = .1) +
+  ggplot2::annotate("text", x = 17.5, y = .19, label = "Vehicle approaches jaywalkers", size = 2) +
+  theme(legend.key = element_rect(fill = NA), text = element_text(face = "bold")) -> p2
+
+p2
+
+ggarrange(p1 , p2)
+
+ggsave("TimeToTakeControl.jpg", device = "jpg",width = 8.3, height = 3.7, units = "in")
+
+## ================================================================================================================
+##                                VISUALIZATION (OLD)           
+## ================================================================================================================
 
 std.error <- function(x) sd(x)/sqrt(length(x))
 
@@ -275,19 +316,7 @@ d  |>
     )
   ) -> d_density
 
-ggplot(data = d_density, aes(color =`Marketing Label`, x=time_control )) +
-  stat_density(geom="line", position="identity", alpha=.75) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        plot.title = element_text(hjust = 0.5, face = "bold", size=10), legend.position = 'top' ) + 
-  scale_color_grey() +
-  ylab("Density") +
-  xlab("Time to Take Control (s)") + 
-  ggplot2::annotate("rect", xmin = 5, xmax = 10, ymin = 0, ymax = .2,alpha = .1) +
-  ggplot2::annotate("text", x = 7.5, y = .08, label = "Vehicle approaches intersection", size = 2) +
-  ggplot2::annotate("rect", xmin = 15, xmax = 20, ymin = 0, ymax = .2,alpha = .1) +
-  ggplot2::annotate("text", x = 17.5, y = .19, label = "Vehicle approaches jaywalkers", size = 2) +
-  theme(legend.key = element_rect(fill = NA))
+
 
 ggsave("time_density.pdf", device = "pdf",width = 5.3, height = 3.7, units = "in")
 
