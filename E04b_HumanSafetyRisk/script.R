@@ -333,3 +333,23 @@ ggplot(data = d_plot2, aes(fill=`Human Safety Risks`, y=avg_value, x = DV)) +
 p
 
 ggsave("backfiring.jpg", device = "jpg",width = 5.3, height = 3.7, units = "in")
+
+
+##==========================================================
+##                        Covariates
+##==========================================================
+
+## DV: Firm
+summary(lm(firm ~ label + age, d))
+summary(lm(firm ~ label + gender, d))
+
+summary(lm(firm ~ risks + age, d))
+summary(lm(firm ~ risks + gender, d))
+
+## DV: Human
+summary(lm(human ~ label + age, d))
+summary(lm(human ~ label + gender, d))
+
+summary(lm(human ~ risks + age, d))
+summary(lm(human ~ risks + gender, d))
+

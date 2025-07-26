@@ -275,3 +275,23 @@ ggarrange(p2 + rremove("ylab") + rremove("xlab"),
 p
 
 ggsave("env_benefits.jpg", device = "jpg",width = 5.3, height = 3.7, units = "in")
+
+
+## ================================================================================================================
+##                                Covariates              
+## ================================================================================================================
+
+## DV: Firm
+summary(lm(firm ~ label + age, d))
+summary(lm(firm ~ label + gender, d))
+
+summary(lm(firm ~ benefits + age, d))
+summary(lm(firm ~ benefits + gender, d))
+
+## DV: Human
+summary(lm(human ~ label + age, d))
+summary(lm(human ~ label + gender, d))
+
+summary(lm(human ~ benefits + age, d))
+summary(lm(human ~ benefits + gender, d))
+

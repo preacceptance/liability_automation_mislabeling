@@ -385,3 +385,21 @@ ggplot(data = d_plot2[d_plot2$DV == "Capability",], aes(x=`AV Safety Benefits`, 
 p2
 
 ggsave("level_of_automation.jpg", device = "jpg",width = 5.3, height = 3.7, units = "in")
+
+##==========================================================
+##                        Covariates
+##==========================================================
+
+## DV: Firm
+summary(lm(firm ~ label + age, d))
+summary(lm(firm ~ label + gender, d))
+
+summary(lm(firm ~ ad + age, d))
+summary(lm(firm ~ ad + gender, d))
+
+## DV: Human
+summary(lm(human ~ label + age, d))
+summary(lm(human ~ label + gender, d))
+
+summary(lm(human ~ ad + age, d))
+summary(lm(human ~ ad + gender, d))
